@@ -22,6 +22,7 @@ class DrawingApp:
 
         self.last_x, self.last_y = None, None
         self.pen_color = 'black'
+        self.previous_color = self.pen_color
 
         self.brush_size = 1
         self.sizes = [1, 2, 5, 10]
@@ -42,12 +43,33 @@ class DrawingApp:
 
         color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
-
+        print(type(color_button))
         save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
         save_button.pack(side=tk.LEFT)
 
+        eraser_button = tk.Button(control_frame, text='Ластик', command=self.mode_eraser)
+        eraser_button.pack(side=tk.LEFT)
+
+        drawing_button = tk.Button(control_frame, text="Рисование", command=self.mode_drawing)
+        drawing_button.pack(side=tk.LEFT)
+
         self.brush_size_scale = tk.OptionMenu(control_frame, self.size_var, *self.sizes, command=self.update_brush_size)
         self.brush_size_scale.pack(side=tk.LEFT)
+
+    def mode_drawing(self):
+        """
+        Режим рисования, восстанавливает предыдущий цвет пера.
+        """
+        if self.previous_color:
+            self.pen_color = self.previous_color
+
+    def mode_eraser(self):
+        """
+        Режим ластика, сохраняет текущий цвет, и устанавливает белый цвет(цвет фона)
+        """
+        self.previous_color = self.pen_color
+        self.pen_color = 'white'
+
 
     def update_brush_size(self, size):
         """Обновляем текущий размер кисти при выборе нового значения из выпадающего списка.
@@ -63,6 +85,7 @@ class DrawingApp:
         текущего цвета пера и размера кисти
         :param event: Событие, содержащий координаты курсора мыши
         """
+
         if self.last_x and self.last_y:
             self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
                                     width=self.brush_size, fill=self.pen_color,
@@ -88,8 +111,10 @@ class DrawingApp:
     def choose_color(self):
         """Устанавливает цвет пера."""
         color = colorchooser.askcolor(color=self.pen_color)
+        current_color = None
         if color[1]:
             self.pen_color = color[1]
+            current_color = color[1]
 
     def save_image(self):
         """Позволяет пользователю сохранить изображение, используя стандартное диалоговое окно для сохранения файла.
