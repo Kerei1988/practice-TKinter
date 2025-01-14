@@ -32,6 +32,7 @@ class DrawingApp:
 
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
+        self.canvas.bind('<Button-3>', self.pick_color)
 
     def setup_ui(self):
         """ Настройка пользовательского интерфейса приложения. """
@@ -43,7 +44,7 @@ class DrawingApp:
 
         color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
-        print(type(color_button))
+
         save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
         save_button.pack(side=tk.LEFT)
 
@@ -55,6 +56,18 @@ class DrawingApp:
 
         self.brush_size_scale = tk.OptionMenu(control_frame, self.size_var, *self.sizes, command=self.update_brush_size)
         self.brush_size_scale.pack(side=tk.LEFT)
+
+    def pick_color(self, event):
+        """Получение цвета пикселя под курсором и установка его как текущий цвет пера."""
+        x, y = event.x, event.y
+        if 0 <= x < self.image.width and 0 <= y < self.image.height:
+            color = self.image.getpixel((x, y))
+            if isinstance(color, tuple) and len(color) == 3:
+                self.pen_color = '#{:02x}{:02x}{:02x}'.format(*color)
+            else:
+                print("Unexpected pixel format:", color)
+        else:
+            print("Clicked outside the canvas.")
 
     def mode_drawing(self):
         """
