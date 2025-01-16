@@ -30,6 +30,9 @@ class DrawingApp:
 
         self.setup_ui()
 
+        self.root.bind("<Control-s>", self.save_image)
+        self.root.bind("<Control-c>", self.choose_color)
+
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
         self.canvas.bind('<Button-3>', self.pick_color)
@@ -121,17 +124,23 @@ class DrawingApp:
         self.image = Image.new("RGB", (600, 400), "white")
         self.draw = ImageDraw.Draw(self.image)
 
-    def choose_color(self):
-        """Устанавливает цвет пера."""
+    def choose_color(self, event=None):
+        """Устанавливает цвет пера.
+        :param event: Str, событие, по умолчанию None, что бы функция была универсальной, для вызова в двух случаях:
+         Кнопка и сочетания клавиш Ctrl + C.
+        """
         color = colorchooser.askcolor(color=self.pen_color)
         current_color = None
         if color[1]:
             self.pen_color = color[1]
             current_color = color[1]
 
-    def save_image(self):
+    def save_image(self, event=None):
         """Позволяет пользователю сохранить изображение, используя стандартное диалоговое окно для сохранения файла.
-         Поддерживает только формат PNG. В случае успешного сохранения выводится сообщение об успешном сохранении."""
+         Поддерживает только формат PNG. В случае успешного сохранения выводится сообщение об успешном сохранении.
+        :param event: Str, событие, по умолчанию None, что бы функция была универсальной, для вызова в двух случаях:
+         Кнопка и сочетания клавиш Ctrl + S.
+        """
         file_path = filedialog.asksaveasfilename(filetypes=[('PNG files', '*.png')])
 
         if file_path:
