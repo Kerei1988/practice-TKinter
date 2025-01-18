@@ -37,6 +37,7 @@ class DrawingApp:
         self.canvas.bind('<ButtonRelease-1>', self.reset)
         self.canvas.bind('<Button-3>', self.pick_color)
 
+
     def setup_ui(self):
         """ Настройка пользовательского интерфейса приложения. """
         control_frame = tk.Frame(self.root)
@@ -47,6 +48,9 @@ class DrawingApp:
 
         color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
         color_button.pack(side=tk.LEFT)
+
+        self.color_brush = tk.Label(control_frame, bg=self.pen_color, width=2)
+        self.color_brush.pack(side=tk.LEFT)
 
         save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
         save_button.pack(side=tk.LEFT)
@@ -134,6 +138,7 @@ class DrawingApp:
         if color[1]:
             self.pen_color = color[1]
             current_color = color[1]
+            self.color_brush.config(bg=self.pen_color)
 
     def save_image(self, event=None):
         """Позволяет пользователю сохранить изображение, используя стандартное диалоговое окно для сохранения файла.
