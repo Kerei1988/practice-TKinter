@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox
 from PIL import Image, ImageDraw
-
+from tkinter import simpledialog
 
 class DrawingApp:
     """Приложение для рисования с возможностью выбора цвета и сохранения изображения."""
@@ -41,7 +41,7 @@ class DrawingApp:
     def setup_ui(self):
         """ Настройка пользовательского интерфейса приложения. """
         control_frame = tk.Frame(self.root)
-        control_frame.pack(fill=tk.X)
+        control_frame.pack(fill=tk.Y)
 
         clear_button = tk.Button(control_frame, text="Очистить", command=self.clear_canvas)
         clear_button.pack(side=tk.LEFT)
@@ -61,8 +61,31 @@ class DrawingApp:
         drawing_button = tk.Button(control_frame, text="Рисование", command=self.mode_drawing)
         drawing_button.pack(side=tk.LEFT)
 
+        canvas_size = tk.Button(control_frame, text="Размер холста", command=self.resize_canvas)
+        canvas_size.pack(side=tk.LEFT)
+
         self.brush_size_scale = tk.OptionMenu(control_frame, self.size_var, *self.sizes, command=self.update_brush_size)
         self.brush_size_scale.pack(side=tk.LEFT)
+
+    def resize_canvas(self):
+        """
+        Метод реализующий ввод и изменение размера холста,
+        """
+        height_canvas = simpledialog.askinteger("Изменение размера", "Введите высоту(положительное число):",
+                                                parent=self.root)
+        width_canvas = simpledialog.askinteger("Изменение размера", "Введите ширину(положительное число):",
+                                               parent=self.root)
+        if height_canvas is not None and width_canvas is not None:
+            if height_canvas > 0 and width_canvas > 0:
+                self.image = Image.new("RGB", (width_canvas, height_canvas), "white")
+                self.draw = ImageDraw.Draw(self.image)
+                self.canvas.config(width=width_canvas, height=height_canvas)
+                self.canvas.pack()
+            else:
+                messagebox.showwarning("Ошибка", "Ширина и высота должны быть положительными числами")
+        else:
+            messagebox.showinfo("Информация", "Размер холста не изменен")
+
 
     def pick_color(self, event):
         """Получение цвета пикселя под курсором и установка его как текущий цвет пера."""
