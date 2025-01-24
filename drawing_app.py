@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import colorchooser, filedialog, messagebox
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageTk
 from tkinter import simpledialog
 
 class DrawingApp:
@@ -20,6 +20,10 @@ class DrawingApp:
         self.canvas = tk.Canvas(self.root, width=600, height=400, bg='white')
         self.canvas.pack()
 
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
+        self.canvas.image = self.photo
+
         self.last_x, self.last_y = None, None
         self.pen_color = 'black'
         self.previous_color = self.pen_color
@@ -27,6 +31,8 @@ class DrawingApp:
         self.brush_size = 1
         self.sizes = [1, 2, 5, 10]
         self.size_var = tk.IntVar(value=self.brush_size)
+
+        self.text_entries = []
 
         self.setup_ui()
 
@@ -36,7 +42,6 @@ class DrawingApp:
         self.canvas.bind('<B1-Motion>', self.paint)
         self.canvas.bind('<ButtonRelease-1>', self.reset)
         self.canvas.bind('<Button-3>', self.pick_color)
-
 
     def setup_ui(self):
         """ Настройка пользовательского интерфейса приложения. """
@@ -61,11 +66,61 @@ class DrawingApp:
         drawing_button = tk.Button(control_frame, text="Рисование", command=self.mode_drawing)
         drawing_button.pack(side=tk.LEFT)
 
+        background_color_canvas = tk.Button(control_frame, text="Цвет фона", command=self.change_background_color)
+        background_color_canvas.pack(side=tk.LEFT)
+
         canvas_size = tk.Button(control_frame, text="Размер холста", command=self.resize_canvas)
         canvas_size.pack(side=tk.LEFT)
 
         self.brush_size_scale = tk.OptionMenu(control_frame, self.size_var, *self.sizes, command=self.update_brush_size)
         self.brush_size_scale.pack(side=tk.LEFT)
+
+        self.text_button = tk.Button(control_frame, text="Текст", command=self.add_text)
+        self.text_button.pack(side=tk.LEFT)
+
+    def change_background_color(self):
+        """
+        Изменяет цвет фона, сохраняя все нарисованные объекты.
+        """
+        selected_color = colorchooser.askcolor(title="Выберите цвет фона")[1]
+        if selected_color:
+            new_image = Image.new("RGB", self.image.size, selected_color)
+            self.draw = ImageDraw.Draw(new_image)
+            for text, x, y, color_text in self.text_entries:
+                self.draw.text((x, y), text, fill=color_text)
+            self.image.paste(new_image, mask=new_image.convert("RGBA"))
+            self.draw = ImageDraw.Draw(self.image)
+            self.canvas.config(bg=selected_color)
+            self.update_canvas()
+
+    def add_text(self):
+        """
+         Открывает диалоговое окно для ввода текста пользователем. После ввода текста, привязываем обработчик события
+         клика мышью для размещения текста на холсте.
+        """
+        text = tk.simpledialog.askstring("Текст", "Введите текст", parent=self.root)
+        if text:
+            self.canvas.bind("<Button-1>", lambda event: self.add_text_on_canvas(event, text))
+
+    def add_text_on_canvas(self, event, text):
+        """
+         Размещает текст на холсте в указанную позицию.
+        :param event:  Событие мыши, содержащее координаты X и Y.
+        :param text: Текст, который должен быть размещён на холсте.
+        :return: None
+        """
+        x = event.x
+        y = event.y
+
+        current_color = self.pen_color
+        self.draw.text((x, y), text, fill=current_color)
+        self.text_entries.append((text, x, y, current_color))
+        self.update_canvas()
+        self.canvas.unbind("<Button-1>")
+
+    def update_canvas(self):
+        """Обновляет холст с текущим изображением."""
+        self.photo.paste(self.image)
 
     def resize_canvas(self):
         """
@@ -182,7 +237,6 @@ def main():
     root = tk.Tk()
     app = DrawingApp(root)
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
